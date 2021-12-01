@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="bitServer_console:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/bitServer_console_jar</output-path>
+    <root id="archive" name="bitServer_console.jar">
+      <element id="module-output" name="bitServer_console" />
+    </root>
+  </artifact>
+</component>
