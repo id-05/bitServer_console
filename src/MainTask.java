@@ -1,18 +1,16 @@
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
+import org.dcm4che2.tool.dcmsnd.DcmSnd;
 
 public class MainTask extends TimerTask {
 
@@ -40,13 +38,51 @@ public class MainTask extends TimerTask {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate date = LocalDate.parse(basicFileAttributes.creationTime().toString().substring(0,10),formatter);
 
-                if(nowDate.equals(date)){
+                if(true/*nowDate.equals(date)*/){
                     //передать в очередь отправки
-                    HttpURLConnection conn = connection.sendDicom("/instances", Files.readAllBytes(bUfFile.toPath()));
+                    //connection.sendDicom("/instances", Files.readAllBytes(bUfFile.toPath()));
+                    sendDcmFile(bUfFile);
                 }
             }
         } catch (IOException e) {
            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void sendDcmFile(File dcmFile) {
+        DcmSnd dcmsnd = new DcmSnd("CLIENT");
+        dcmsnd.setLocalPort(4243);
+        dcmsnd.setLocalHost("localhost");
+        dcmsnd.setCalledAET("ORTHANC");
+        dcmsnd.setRemoteHost("192.168.1.58");
+        dcmsnd.setRemotePort(4242);
+        dcmsnd.setOfferDefaultTransferSyntaxInSeparatePresentationContext(false);
+        dcmsnd.setSendFileRef(false);
+        dcmsnd.setStorageCommitment(false);
+        dcmsnd.setPackPDV(true);
+        dcmsnd.setTcpNoDelay(true);
+
+        dcmsnd.addFile(dcmFile);
+
+        dcmsnd.configureTransferCapability();
+        try {
+            dcmsnd.start();
+        } catch (Exception e) {
+            System.out.println("ERROR: Failed to start server for receiving " +
+                    "Storage Commitment results:" + e.getMessage());
+            return;
+        }
+
+        try {
+            dcmsnd.open();
+            dcmsnd.send();
+            dcmsnd.close();
+            System.out.println("Released connection to " + "PACSWFM01");
+        } catch (Exception e) {
+            System.out.println("ERROR: Failed to establish association:"
+                    + e.getMessage());
+        } finally {
+            dcmsnd.stop();
         }
     }
 }

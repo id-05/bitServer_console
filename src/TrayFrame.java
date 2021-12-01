@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 import java.net.URL;
 
 public class TrayFrame extends JFrame {
@@ -10,18 +9,16 @@ public class TrayFrame extends JFrame {
     private final SystemTray systemTray = SystemTray.getSystemTray();
     public boolean chetTray = false;
 
-    public TrayFrame() throws IOException {
+    public TrayFrame() {
         super("Сворачиваем в трей");
         URL imageURL = this.getClass().getResource("/icon.png");
         Image icon = Toolkit.getDefaultToolkit().getImage(imageURL);
         trayIcon = new TrayIcon(icon, "Go to tray");
         trayIcon.setImageAutoSize(true);
-        trayIcon.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                setVisible(true);
-                setState(JFrame.NORMAL);
-                removeTray();
-            }
+        trayIcon.addActionListener(ev -> {
+            setVisible(true);
+            setState(JFrame.NORMAL);
+            removeTray();
         });
 
         MouseListener mouS = new MouseListener() {
@@ -51,12 +48,10 @@ public class TrayFrame extends JFrame {
         };
 
         trayIcon.addMouseMotionListener(mouM);
-        addWindowStateListener(new WindowStateListener() {
-            public void windowStateChanged(WindowEvent ev) {
-                if (ev.getNewState() == JFrame.ICONIFIED) {
-                    setVisible(false);
-                    addTray();
-                }
+        addWindowStateListener(ev -> {
+            if (ev.getNewState() == JFrame.ICONIFIED) {
+                setVisible(false);
+                addTray();
             }
         });
     }
@@ -74,7 +69,7 @@ public class TrayFrame extends JFrame {
         }
     }
 
-    public static void main(String[] args) throws IOException, Exception {
+    public static void main(String[] args) throws Exception {
         app = new TrayFrame();
         app.setVisible(true);
         app.setAlwaysOnTop(true);

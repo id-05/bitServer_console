@@ -1,8 +1,6 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -32,7 +30,7 @@ public class MainForm extends TrayFrame{
     public static TimerTask timerTask;
     public static Integer timeToUpdate = 1;
     public static Preferences userPrefs;
-    boolean state = false; //(false - stop/ true - start)
+    boolean state;
 
     public MainForm() throws Exception {
         super();
@@ -62,30 +60,24 @@ public class MainForm extends TrayFrame{
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
 
-        startButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                state = true;
-                stopButton.setEnabled(true);
-                startButton.setEnabled(false);
-                userPrefs.putBoolean("state", state);
-                try {
-                    timerStart();
-                } catch (Exception exception) {
-                    exception.printStackTrace();
-                }
+        startButton.addActionListener(e -> {
+            state = true;
+            stopButton.setEnabled(true);
+            startButton.setEnabled(false);
+            userPrefs.putBoolean("state", state);
+            try {
+                timerStart();
+            } catch (Exception exception) {
+                exception.printStackTrace();
             }
         });
 
-        stopButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                state = false;
-                startButton.setEnabled(true);
-                stopButton.setEnabled(false);
-                userPrefs.putBoolean("state", state);
-                timerStop();
-            }
+        stopButton.addActionListener(e -> {
+            state = false;
+            startButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            userPrefs.putBoolean("state", state);
+            timerStop();
         });
 
         if(state){
@@ -94,31 +86,25 @@ public class MainForm extends TrayFrame{
             timerStop();
         }
 
-        browseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Выбор директории");
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                int result = fileChooser.showOpenDialog(MainForm.this);
-                if (result == JFileChooser.APPROVE_OPTION )
-                    path.setText(fileChooser.getSelectedFile().getPath());
-            }
+        browseButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Выбор директории");
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int result = fileChooser.showOpenDialog(MainForm.this);
+            if (result == JFileChooser.APPROVE_OPTION )
+                path.setText(fileChooser.getSelectedFile().getPath());
         });
 
-        saveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //System.out.println("save");
-                userPrefs.put("ip", ipaddress.getText());
-                userPrefs.put("port", port.getText());
-                userPrefs.put("login", login.getText());
-                userPrefs.put("password", password.getText());
-                userPrefs.put("path", path.getText());
-                timeToUpdate = (Integer) spinner1.getValue();
-                userPrefs.putInt("timeToUpdate", timeToUpdate);
-                connection = new OrthancRestApi(ipaddress.getText(),port.getText(),login.getText(),password.getText());
-            }
+        saveButton.addActionListener(e -> {
+            //System.out.println("save");
+            userPrefs.put("ip", ipaddress.getText());
+            userPrefs.put("port", port.getText());
+            userPrefs.put("login", login.getText());
+            userPrefs.put("password", password.getText());
+            userPrefs.put("path", path.getText());
+            timeToUpdate = (Integer) spinner1.getValue();
+            userPrefs.putInt("timeToUpdate", timeToUpdate);
+            connection = new OrthancRestApi(ipaddress.getText(),port.getText(),login.getText(),password.getText());
         });
 
         SpinnerModel spinnerModel = new SpinnerNumberModel(60,5,1000,1);
@@ -133,13 +119,13 @@ public class MainForm extends TrayFrame{
         if(!ipaddress.getText().equals("")&&(!port.getText().equals(""))&&(!login.getText().equals(""))&&
                 (!password.getText().equals(""))&&(!path.getText().equals(""))) {
             HttpURLConnection conn = null;
-            try {
-                conn = connection.makeGetConnection("/statistics");
-            }catch (Exception e){
-                status.setText("Status: Connection to Orthanc error");
-            }
-            assert conn != null;
-            if(conn.getResponseMessage().contains("OK")){
+//            try {
+//                conn = connection.makeGetConnection();
+//            }catch (Exception e){
+//                status.setText("Status: Connection to Orthanc error");
+//            }
+        //    assert conn != null;
+            if(true){
                 timerTask = new MainTask(connection, path.getText());
                 timer = new Timer(true);
                 timer.scheduleAtFixedRate(timerTask, 0, timeToUpdate * 60 * 1000);
@@ -174,7 +160,6 @@ public class MainForm extends TrayFrame{
         }
     }
 
-
     public static void main(String[] args) throws Exception {
         final MainForm MainFormNew = new  MainForm();
         Image icon = ImageIO.read(MainForm.class.getResourceAsStream("/icon.png"));
@@ -184,5 +169,4 @@ public class MainForm extends TrayFrame{
     private void createUIComponents() {
         // TODO: place custom component creation code here
     }
-
 }
