@@ -1,5 +1,3 @@
-![](https://github.com/id-05/MagnetMonitorRemoteViewerServer/blob/master/images/preview.jpg)
-
 
 # bitServer console
 
@@ -13,7 +11,7 @@
 
 - Программа для автоматизации загрузки DICOM-файлов из локальной директории на DICOM-сервер;
 - Основано на OpenSource проекте DCM4CHE;
-- Может быть использовано для интеграции с DICOM-сервером, модальностей у которых отсутствуют соббственные DICOM-инструменты (старые рентген аппараты и т.п.);
+- Может быть использовано для интеграции с DICOM-сервером, модальностей у которых отсутствуют собственные DICOM-инструменты (старые рентген аппараты и т.п.);
 
 
 # [Download bitServer console](https://github.com/id-05/bitServer_console/raw/master/out/artifacts/bitServer_console_jar/bitServer_console.jar)
