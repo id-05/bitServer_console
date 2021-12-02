@@ -1,4 +1,4 @@
-![](https://github.com/id-05/bitServer_console/blob/master/images/preview.jpg)
+![](https://github.com/id-05/bitServer_console/blob/master/image/preview.jpg)
 
 
 # bitServer console
