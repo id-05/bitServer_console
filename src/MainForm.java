@@ -13,12 +13,12 @@ import java.util.TimerTask;
 import java.util.prefs.Preferences;
 
 public class MainForm extends TrayFrame{
-    private static OrthancRestApi connection;
+    private ConnectionSettings conSet;
     private JPanel mainPane;
     private JTextField ipaddress;
     private JTextField port;
-    private JTextField login;
-    private JTextField password;
+    private JTextField rAeTitle;
+    private JTextField locAeTitle;
     private JTextField path;
     private JButton browseButton;
     private JButton saveButton;
@@ -26,6 +26,7 @@ public class MainForm extends TrayFrame{
     private JButton startButton;
     public JLabel status;
     private JSpinner spinner1;
+    private JTextField locPort;
     public static Timer timer;
     public static TimerTask timerTask;
     public static Integer timeToUpdate = 1;
@@ -37,20 +38,22 @@ public class MainForm extends TrayFrame{
 
         userPrefs = Preferences.userRoot().node("bitServerConsole");
         state = userPrefs.getBoolean("state", false);
-        ipaddress.setText(userPrefs.get("ip", "localhost"));
-        port.setText(userPrefs.get("port", "8042"));
-        login.setText(userPrefs.get("login", "login"));
-        password.setText(userPrefs.get("password", "password"));
+        ipaddress.setText(userPrefs.get("remoteip", "192.168.1.58"));
+        port.setText(userPrefs.get("remoteport", "4242"));
+        rAeTitle.setText(userPrefs.get("remoteae", "ORTHANC"));
+        locAeTitle.setText(userPrefs.get("localae", "CLIENT"));
+        locPort.setText(userPrefs.get("localport", "4243"));
         path.setText(userPrefs.get("path", "C:\\"));
         timeToUpdate = userPrefs.getInt("timeToUpdate",60);
         spinner1.setValue(timeToUpdate);
         userPrefs.putInt("timeToUpdate", (Integer) spinner1.getValue());
-        connection = new OrthancRestApi(ipaddress.getText(),port.getText(),login.getText(),password.getText());
+        conSet = new ConnectionSettings(ipaddress.getText(),Integer.parseInt(port.getText()),rAeTitle.getText(),locAeTitle.getText(),
+                Integer.parseInt(locPort.getText()),path.getText());
         startButton.setEnabled(!state);
         stopButton.setEnabled(state);
         setContentPane(mainPane);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(250,250,400,300);
+        setBounds(250,250,400,325);
         setLocationRelativeTo(null);
         mainPane.setBackground(Color.lightGray);
         mainPane.setForeground(Color.white);
@@ -96,15 +99,16 @@ public class MainForm extends TrayFrame{
         });
 
         saveButton.addActionListener(e -> {
-            //System.out.println("save");
-            userPrefs.put("ip", ipaddress.getText());
-            userPrefs.put("port", port.getText());
-            userPrefs.put("login", login.getText());
-            userPrefs.put("password", password.getText());
+            userPrefs.put("remoteip", ipaddress.getText());
+            userPrefs.put("remoteport", port.getText());
+            userPrefs.put("remoteae", rAeTitle.getText());
+            userPrefs.put("localae", locAeTitle.getText());
+            userPrefs.put("localport", locPort.getText());
             userPrefs.put("path", path.getText());
             timeToUpdate = (Integer) spinner1.getValue();
             userPrefs.putInt("timeToUpdate", timeToUpdate);
-            connection = new OrthancRestApi(ipaddress.getText(),port.getText(),login.getText(),password.getText());
+            conSet = new ConnectionSettings(ipaddress.getText(),Integer.parseInt(port.getText()),
+                    rAeTitle.getText(),locAeTitle.getText(),Integer.parseInt(locPort.getText()),path.getText());
         });
 
         SpinnerModel spinnerModel = new SpinnerNumberModel(60,5,1000,1);
@@ -116,24 +120,16 @@ public class MainForm extends TrayFrame{
     public void timerStart() throws Exception {
         timerTask = null;
         timer = null;
-        if(!ipaddress.getText().equals("")&&(!port.getText().equals(""))&&(!login.getText().equals(""))&&
-                (!password.getText().equals(""))&&(!path.getText().equals(""))) {
-            HttpURLConnection conn = null;
-//            try {
-//                conn = connection.makeGetConnection();
-//            }catch (Exception e){
-//                status.setText("Status: Connection to Orthanc error");
-//            }
-        //    assert conn != null;
-            if(true){
-                timerTask = new MainTask(connection, path.getText());
+        if(!ipaddress.getText().equals("")&&(!port.getText().equals(""))&&(!rAeTitle.getText().equals(""))&&
+                (!locAeTitle.getText().equals(""))&&(!locPort.getText().equals(""))&&(!path.getText().equals(""))) {
+            try {
+                timerTask = new MainTask(conSet, path.getText());
                 timer = new Timer(true);
                 timer.scheduleAtFixedRate(timerTask, 0, timeToUpdate * 60 * 1000);
                 status.setText("Status: OK");
-            }else{
-                status.setText("Status: Connection to Orthanc error");
+            }catch (Exception e){
+                status.setText("Status: Error "+e.getMessage());
             }
-
         }else{
             status.setText("Status: One or more setting fields is empty");
         }

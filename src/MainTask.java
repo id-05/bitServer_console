@@ -14,11 +14,11 @@ import org.dcm4che2.tool.dcmsnd.DcmSnd;
 
 public class MainTask extends TimerTask {
 
-    OrthancRestApi connection;
+    static ConnectionSettings conSet;
     String pathToFolder;
 
-    MainTask(OrthancRestApi connection, String pathToFolder){
-        this.connection = connection;
+    MainTask(ConnectionSettings conSet, String pathToFolder){
+        MainTask.conSet = conSet;
         this.pathToFolder = pathToFolder;
     }
 
@@ -50,12 +50,12 @@ public class MainTask extends TimerTask {
     }
 
     public static void sendDcmFile(File dcmFile) {
-        DcmSnd dcmsnd = new DcmSnd("CLIENT");
-        dcmsnd.setLocalPort(4243);
+        DcmSnd dcmsnd = new DcmSnd(conSet.getLocalAeTitle());
+        dcmsnd.setLocalPort(conSet.getLocalPort());
         dcmsnd.setLocalHost("localhost");
-        dcmsnd.setCalledAET("ORTHANC");
-        dcmsnd.setRemoteHost("192.168.1.58");
-        dcmsnd.setRemotePort(4242);
+        dcmsnd.setCalledAET(conSet.getRemoteAeTitle());
+        dcmsnd.setRemoteHost(conSet.getRemoteIp());
+        dcmsnd.setRemotePort(conSet.getRemotePort());
         dcmsnd.setOfferDefaultTransferSyntaxInSeparatePresentationContext(false);
         dcmsnd.setSendFileRef(false);
         dcmsnd.setStorageCommitment(false);
