@@ -12,6 +12,7 @@ public class TrayFrame extends JFrame {
     public TrayFrame() {
         super("Сворачиваем в трей");
         URL imageURL = this.getClass().getResource("/icon.png");
+        System.out.println(imageURL.getPath());
         Image icon = Toolkit.getDefaultToolkit().getImage(imageURL);
         trayIcon = new TrayIcon(icon, "Go to tray");
         trayIcon.setImageAutoSize(true);

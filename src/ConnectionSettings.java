@@ -5,6 +5,15 @@ public class ConnectionSettings {
     private String LocalAeTitle;
     private int LocalPort;
     private String Path;
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getRemoteIp() {
         return RemoteIp;

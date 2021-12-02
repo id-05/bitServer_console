@@ -1,5 +1,5 @@
+;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,18 +38,24 @@ public class MainTask extends TimerTask {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate date = LocalDate.parse(basicFileAttributes.creationTime().toString().substring(0,10),formatter);
 
-                if(true/*nowDate.equals(date)*/){
+                if(nowDate.equals(date)){
                     //передать в очередь отправки
                     //connection.sendDicom("/instances", Files.readAllBytes(bUfFile.toPath()));
                     sendDcmFile(bUfFile);
                 }
             }
-        } catch (IOException e) {
-           System.out.println(e.getMessage());
+        } catch (Exception e) {
+           //System.out.println(e.getMessage());
+
+            try {
+                throw new Exception(e);
+            } catch (Exception exception) {
+                conSet.setStatus(e.getMessage());
+            }
         }
     }
 
-    public static void sendDcmFile(File dcmFile) {
+    public static void sendDcmFile(File dcmFile) throws Exception {
         DcmSnd dcmsnd = new DcmSnd(conSet.getLocalAeTitle());
         dcmsnd.setLocalPort(conSet.getLocalPort());
         dcmsnd.setLocalHost("localhost");
@@ -77,10 +83,9 @@ public class MainTask extends TimerTask {
             dcmsnd.open();
             dcmsnd.send();
             dcmsnd.close();
-            System.out.println("Released connection to " + "PACSWFM01");
+            conSet.setStatus("OK");
         } catch (Exception e) {
-            System.out.println("ERROR: Failed to establish association:"
-                    + e.getMessage());
+            throw new Exception("Error to connect DICOM server!");
         } finally {
             dcmsnd.stop();
         }

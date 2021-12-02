@@ -1,6 +1,7 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -65,6 +66,11 @@ public class MainForm extends TrayFrame{
 
         startButton.addActionListener(e -> {
             state = true;
+            if(state){
+                conSet.setStatus("Start");
+            }else{
+                conSet.setStatus("Stop");
+            }
             stopButton.setEnabled(true);
             startButton.setEnabled(false);
             userPrefs.putBoolean("state", state);
@@ -73,6 +79,7 @@ public class MainForm extends TrayFrame{
             } catch (Exception exception) {
                 exception.printStackTrace();
             }
+
         });
 
         stopButton.addActionListener(e -> {
@@ -81,7 +88,19 @@ public class MainForm extends TrayFrame{
             stopButton.setEnabled(false);
             userPrefs.putBoolean("state", state);
             timerStop();
+            if(state){
+                conSet.setStatus("Start");
+            }else{
+                conSet.setStatus("Stop");
+            }
         });
+
+        if(state){
+            conSet.setStatus("Start");
+        }else{
+            conSet.setStatus("Stop");
+        }
+        timerStatus();
 
         if(state){
             timerStart();
@@ -115,9 +134,10 @@ public class MainForm extends TrayFrame{
         spinner1.setModel(spinnerModel);
         spinnerModel.setValue(timeToUpdate);
         createNewDatabase("db");
+
     }
 
-    public void timerStart() throws Exception {
+    public void timerStart() {
         timerTask = null;
         timer = null;
         if(!ipaddress.getText().equals("")&&(!port.getText().equals(""))&&(!rAeTitle.getText().equals(""))&&
@@ -126,13 +146,25 @@ public class MainForm extends TrayFrame{
                 timerTask = new MainTask(conSet, path.getText());
                 timer = new Timer(true);
                 timer.scheduleAtFixedRate(timerTask, 0, timeToUpdate * 60 * 1000);
-                status.setText("Status: OK");
+                status.setText("Status: "+conSet.getStatus());
             }catch (Exception e){
-                status.setText("Status: Error "+e.getMessage());
+                status.setText("Status: Error "+conSet.getStatus());
             }
         }else{
             status.setText("Status: One or more setting fields is empty");
         }
+    }
+
+    public void timerStatus(){
+        TimerTask timerTask2 = new TimerTask() {
+            @Override
+            public void run() {
+                status.setText("Status: "+conSet.getStatus());
+            }
+        };
+
+        Timer timer2 = new Timer(true);
+        timer2.scheduleAtFixedRate(timerTask2,0,1000);
     }
 
     public void timerStop(){
